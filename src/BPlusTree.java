@@ -280,8 +280,14 @@ public class BPlusTree
 
     }
 
-    public void excluir(int info){
+    public void excluir(int info, int posArq){
+        No no, pai;
 
+        if(raiz == null)
+            raiz = new No(n,info,posArq);
+        else{
+
+        }
     }
 
     public void exibir(){
