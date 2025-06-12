@@ -1,13 +1,15 @@
 public class BPlusTree
 {
     private No raiz;
+    private int n;
 
-    public BPlusTree()
+    public BPlusTree(int n)
     {
         raiz = null;
+        this.n = n;
     }
 
-    private No navegarAteFolha(int info)
+   /* private No navegarAteFolha(int info)
     {
         No no = raiz;
         int pos;
@@ -270,6 +272,31 @@ public class BPlusTree
             if(folha!=raiz && folha.getTl()<No.m)
                 redistribuir_concatenar(folha);
         }
+    }*/
+
+
+    public void inserir(int info){
+
+
     }
+
+    public void excluir(int info){
+
+    }
+
+    public void exibir(){
+
+    }
+
+    public void in_ordem()
+    {
+        in_ordem(raiz);
+    }
+
+    private void in_ordem(No raiz)
+    {
+
+    }
+
 
 }

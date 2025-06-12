@@ -1,21 +1,22 @@
 public class No
 {
-    public static final int m = 2; //ordem da B Tree
+    private int n; //ordem da B Tree
     private int vInfo[];
     private int vPos[];
     private No vLig[];
     private int tl;
 
-    public No() {
-        vInfo = new int[2*m+1];
-        vPos = new int[2*m+1];
-        vLig = new No[2*m+2];
+    public No(int m) {
+        n = m;
+        vInfo = new int[m];
+        vPos = new int[m];
+        vLig = new No[m+1];
         tl = 0;
     }
 
-    public No(int info, int posArq)
+    public No(int n, int info, int posArq)
     {
-        this();
+        this(n);
         vInfo[0] = info;
         vPos[0] = posArq;
         tl = 1;
