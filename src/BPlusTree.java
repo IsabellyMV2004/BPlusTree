@@ -300,54 +300,57 @@ public class BPlusTree
     public void split(No folha, No pai){
         No cx1 = new No(n);
         No cx2 = new No(n);
-        int pos, m, i;
+        int pos, m, i,j;
+        boolean flag;
 
-        if(folha.getvLig(0)==null)
-            m = (n-1)/2;
-        else
-            m = (n/2)-1;
-
-        for(i=0; i<m; i++)
-        {
-            cx1.setvInfo(i, folha.getvInfo(i));
-            cx1.setvPos(i, folha.getvPos(i));
-            cx1.setvLig(i, folha.getvLig(i));
+        if(folha.getvLig(0)==null) {
+            m = (n - 1) / 2;
+            flag = true;
         }
-        //cx1.setvLig(m, folha.getvLig(m));
-        //cx1.setTl(m);
+        else {
+            m = (n / 2) - 1;
+            flag = false;
+        }
 
-        for(int j=0; i<folha.getTl(); i++,j++)
-        {
+        for (i = 0; i < m; i++) {
+            cx1.setvInfo(i,folha.getvInfo(i));
+            cx1.setvPos(i,folha.getvPos(i));
+            cx1.setvLig(i,folha.getvLig(i));
+            cx1.setTl(cx1.getTl()+1);
+        }
+        cx1.setvLig(i,folha.getvLig(i));
+
+        for (j = 0; i < folha.getTl(); j++,i++) {
             cx2.setvInfo(j, folha.getvInfo(i));
             cx2.setvPos(j, folha.getvPos(i));
-            cx2.setvLig(j, folha.getvLig(i));
+            cx2.setvLig(j,folha.getvLig(i));
         }
-        cx2.setvLig(m, folha.getvLig(m));
-        cx2.setTl(m);
+        cx2.setvLig(j,folha.getvLig(i));
 
-        if(folha == pai)
-        {
-            folha.setvInfo(0, folha.getvInfo(No.m));
-            folha.setvPos(0, folha.getvPos(No.m));
-            folha.setTl(1);
-            folha.setvLig(0, cx1);
-            folha.setvLig(1, cx2);
+        if(folha==pai){
+            folha = new No(n,cx2.getvInfo(0),cx2.getvPos(0));
+            folha.setvLig(0,cx1);
+            folha.setvLig(1,cx2);
+            folha.setTl(folha.getTl()+1);
+
+            if(!flag)
+                cx2.remanejarExclusao(0);
         }
         else
         {
-            pos = pai.procurarPosicao(folha.getvInfo(No.m));
+            pos = pai.procurarPosicao(cx2.getvInfo(0));
             pai.remanejar(pos);
-            pai.setvInfo(pos, folha.getvInfo(No.m));
-            pai.setvPos(pos, folha.getvPos(No.m));
+            pai.setvInfo(pos, cx2.getvInfo(0));
+            pai.setvPos(pos, cx2.getvPos(0));
+            pai.setvLig(pos,cx1);
+            pai.setvLig(pos+1,cx2);
             pai.setTl(pai.getTl()+1);
-            pai.setvLig(pos, cx1);
-            pai.setvLig(pos+1, cx2);
-            if(pai.getTl() > 2*No.m)
-            {
-                folha = pai;
-                pai = localizarPai(folha, folha.getvInfo(0));
-                split(folha, pai);
-            }
+
+            if(!flag)
+                cx2.remanejarExclusao(0);
+
+            if(pai.getTl()>n-1)
+                split(folha, localizarPai(pai, pai.getvInfo(0)));
         }
     }
 
@@ -367,18 +370,13 @@ public class BPlusTree
             folha.setTl(folha.getTl() + 1);
             if (folha.getTl() > n-1)
             {
-                if(folha == raiz)
-                    if(raiz.getTl() == n+1)
-                        split(raiz,null);
-                else{
-                        pai = localizarPai(folha, info);
-                        split(folha, pai);
-                }
+                pai = localizarPai(folha, info);
+                split(folha, pai);
             }
         }
     }
 
-    public void excluir(int info, int posArq){
+  /*  public void excluir(int info, int posArq){
 
     }
 
@@ -395,6 +393,6 @@ public class BPlusTree
     {
 
     }
-
+*/
 
 }
