@@ -274,20 +274,112 @@ public class BPlusTree
         }
     }*/
 
-
-    public void inserir(int info){
-
-
+    public No navegarAteFolha(int info){
+        No no = raiz;
+        int pos;
+        while(no.getvLig(0) != null)
+        {
+            pos = no.procurarPosicao(info);
+            no = no.getvLig(pos);
+        }
+        return no;
     }
 
-    public void excluir(int info, int posArq){
-        No no, pai;
+    public No localizarPai(No folha,int info){
+        No pai = raiz, no = raiz;
+        int pos;
+
+        while(raiz!=folha){
+            pai = no;
+            pos = no.procurarPosicao(info);
+            no = no.getvLig(pos);
+        }
+        return pai;
+    }
+
+    public void split(No folha, No pai){
+        No cx1 = new No(n);
+        No cx2 = new No(n);
+        int pos, m, i;
+
+        if(folha.getvLig(0)==null)
+            m = (n-1)/2;
+        else
+            m = (n/2)-1;
+
+        for(i=0; i<m; i++)
+        {
+            cx1.setvInfo(i, folha.getvInfo(i));
+            cx1.setvPos(i, folha.getvPos(i));
+            cx1.setvLig(i, folha.getvLig(i));
+        }
+        //cx1.setvLig(m, folha.getvLig(m));
+        //cx1.setTl(m);
+
+        for(int j=0; i<folha.getTl(); i++,j++)
+        {
+            cx2.setvInfo(j, folha.getvInfo(i));
+            cx2.setvPos(j, folha.getvPos(i));
+            cx2.setvLig(j, folha.getvLig(i));
+        }
+        cx2.setvLig(m, folha.getvLig(m));
+        cx2.setTl(m);
+
+        if(folha == pai)
+        {
+            folha.setvInfo(0, folha.getvInfo(No.m));
+            folha.setvPos(0, folha.getvPos(No.m));
+            folha.setTl(1);
+            folha.setvLig(0, cx1);
+            folha.setvLig(1, cx2);
+        }
+        else
+        {
+            pos = pai.procurarPosicao(folha.getvInfo(No.m));
+            pai.remanejar(pos);
+            pai.setvInfo(pos, folha.getvInfo(No.m));
+            pai.setvPos(pos, folha.getvPos(No.m));
+            pai.setTl(pai.getTl()+1);
+            pai.setvLig(pos, cx1);
+            pai.setvLig(pos+1, cx2);
+            if(pai.getTl() > 2*No.m)
+            {
+                folha = pai;
+                pai = localizarPai(folha, folha.getvInfo(0));
+                split(folha, pai);
+            }
+        }
+    }
+
+    public void inserir(int info, int posArq){
+
+        No folha, pai;
+        int pos;
 
         if(raiz == null)
             raiz = new No(n,info,posArq);
         else{
-
+            folha = navegarAteFolha(info);
+            pos = folha.procurarPosicao(info);
+            folha.remanejar(pos);
+            folha.setvInfo(pos, info);
+            folha.setvPos(pos, posArq);
+            folha.setTl(folha.getTl() + 1);
+            if (folha.getTl() > n-1)
+            {
+                if(folha == raiz)
+                    if(raiz.getTl() == n+1)
+                        split(raiz,null);
+                else{
+                        pai = localizarPai(folha, info);
+                        split(folha, pai);
+                }
+            }
         }
+    }
+
+    public void excluir(int info, int posArq){
+
     }
 
     public void exibir(){

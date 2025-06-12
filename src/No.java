@@ -8,9 +8,9 @@ public class No
 
     public No(int m) {
         n = m;
-        vInfo = new int[m];
-        vPos = new int[m];
-        vLig = new No[m+1];
+        vInfo = new int[m+1];
+        vPos = new int[m+1];
+        vLig = new No[m+2];
         tl = 0;
     }
 
