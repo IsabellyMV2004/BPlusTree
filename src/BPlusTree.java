@@ -299,65 +299,72 @@ public class BPlusTree
         return pai;
     }
 
-    public void split(No folha, No pai){
+    public void split(No folha, No pai)
+    {
+        No avo;
         No cx1 = new No(n);
         No cx2 = new No(n);
-        int pos, m, i,j;
-        boolean flag;
+        int i, j, pos, m, promovido;
+        boolean ehFolha;
 
-        if(folha.getvLig(0)==null) {
-            m = (n - 1) / 2;
-            flag = true;
+        if (folha.getvLig(0) == null) {
+            m = (n + 1) / 2;
+            ehFolha = true;
         }
         else {
-            m = (n / 2) - 1;
-            flag = false;
+            m = n / 2;
+            ehFolha = false;
         }
 
-        for (i = 0; i < m; i++) {
-            cx1.setvInfo(i,folha.getvInfo(i));
-            cx1.setvPos(i,folha.getvPos(i));
-            cx1.setvLig(i,folha.getvLig(i));
-            cx1.setTl(cx1.getTl()+1);
+        for (i = 0; i < m; i++)
+        {
+            cx1.setvInfo(i, folha.getvInfo(i));
+            cx1.setvPos(i, folha.getvPos(i));
+            cx1.setTl(cx1.getTl() + 1);
+            if (!ehFolha)
+                cx1.setvLig(i, folha.getvLig(i));
         }
-        cx1.setvLig(i,folha.getvLig(i));
+        if (!ehFolha)
+            cx1.setvLig(i, folha.getvLig(i));
 
-        for (j = 0; i < folha.getTl(); j++,i++) {
+        for (j = 0; i < folha.getTl(); i++, j++)
+        {
             cx2.setvInfo(j, folha.getvInfo(i));
             cx2.setvPos(j, folha.getvPos(i));
-            cx2.setvLig(j,folha.getvLig(i));
-            cx2.setTl(cx2.getTl()+1);
+            cx2.setTl(cx2.getTl() + 1);
+            if (!ehFolha)
+                cx2.setvLig(j, folha.getvLig(i));
         }
-        cx2.setvLig(j,folha.getvLig(i));
+        if (!ehFolha)
+            cx2.setvLig(j, folha.getvLig(i));
 
-        if(folha==pai){
-            if(folha==raiz) {
-                raiz = new No(n, cx2.getvInfo(0), cx2.getvPos(0));
-                folha = raiz;
-            }
-            else
-                folha = new No(n,cx2.getvInfo(0),cx2.getvPos(0));
-            folha.setvLig(0,cx1);
-            folha.setvLig(1,cx2);
-
-            if(!flag)
-                cx2.remanejarExclusao(0);
-        }
-        else
+        promovido = cx2.getvInfo(0);
+        if (folha == raiz)
         {
-            pos = pai.procurarPosicao(cx2.getvInfo(0));
-            pai.remanejar(pos);
-            pai.setvInfo(pos, cx2.getvInfo(0));
-            pai.setvPos(pos, cx2.getvPos(0));
-            pai.setvLig(pos,cx1);
-            pai.setvLig(pos+1,cx2);
-            pai.setTl(pai.getTl()+1);
-
-            if(!flag)
+            raiz = new No(n);
+            raiz.setvInfo(0, promovido);
+            raiz.setvPos(0, cx2.getvPos(0));
+            raiz.setvLig(0, cx1);
+            raiz.setvLig(1, cx2);
+            raiz.setTl(1);
+            if (!ehFolha)
                 cx2.remanejarExclusao(0);
-
-            if(pai.getTl()>n-1)
-                split(folha, localizarPai(pai, pai.getvInfo(0)));
+        }
+        else{
+            pos = pai.procurarPosicao(promovido);
+            pai.remanejar(pos);
+            pai.setvInfo(pos, promovido);
+            pai.setvPos(pos, cx2.getvPos(0));
+            pai.setvLig(pos, cx1);
+            pai.setvLig(pos + 1, cx2);
+            pai.setTl(pai.getTl() + 1);
+            if (!ehFolha)
+                cx2.remanejarExclusao(0);
+            if (pai.getTl() > n - 1)
+            {
+                avo = localizarPai(pai, pai.getvInfo(0));
+                split(pai, avo);
+            }
         }
     }
 
