@@ -390,9 +390,192 @@ public class BPlusTree
         }
     }
 
-  /*  public void excluir(int info, int posArq){
-
+    private No buscarNo(int info)
+    {
+        No no=raiz;
+        int pos;
+        boolean flag=false;
+        while(no!=null && !flag)
+        {
+            pos = no.procurarPosicao(info);
+            if(pos<no.getTl() && info == no.getvInfo(pos))
+                flag=true;
+            else
+                no=no.getvLig(pos);
+        }
+        return no;
     }
+
+    /*public void redistribuir_concatenar(No filhoE, No pai, No filhoD, int pos){
+
+        if(filhoD.getTl() < (n/2-1) && filhoE.getTl() < (n/2-1)){   // concatenar
+
+        }
+        if(filhoD.getTl()<(n/2)-1)
+        {
+            // insere no pai
+            pai.setvInfo(pos, filhoE.getvInfo(filhoE.getTl()-1));
+            pai.setvPos(pos, filhoE.getvPos(filhoE.getTl()-1));
+            // insere no filho da direita
+            filhoD.remanejar(0);
+            filhoD.setvInfo(0, filhoE.getvInfo(filhoE.getTl()-1));
+            filhoD.setvPos(0, filhoE.getvPos(filhoE.getTl()-1));
+            filhoD.setTl(filhoD.getTl() + 1);
+            // remove do filho da esquerda
+            filhoE.setTl(filhoE.getTl()-1);
+        }
+        else
+        {
+            filhoE.setvInfo(filhoE.getTl(), pai.getvInfo(0));
+            filhoD.remanejarExclusao(0);
+            pai.setvInfo(0,filhoD.getvInfo(0));
+        }
+    }
+
+    public void exclusao(int info)
+    {
+        int pos;
+        No filhoE, filhoD, folha;
+        No no = buscarNo(info), filho;
+        if(no != null) //achou a info
+        {
+            pos = no.procurarPosicao(info);
+            if(no.getvLig(0)!=null) //não eh folha
+            {
+                filhoE = no.getvLig(pos);
+                filhoD = no.getvLig(pos+1);
+                if(filhoD.getvInfo(0)==info){ // é o primeiro elemento do filho da direita
+                    filhoD.remanejarExclusao(0);
+                    filhoD.setTl(filhoD.getTl()-1);
+                }
+                if(filhoD.getTl()>(n/2)-1)
+                    no.setvInfo(pos, filhoD.getvInfo(0));
+                else{
+                    redistribuir_concatenar(filhoE,no,filhoD,pos);
+                }
+            }
+            else {
+                if(pos<no.getTl()-1) {
+                    no.remanejarExclusao(pos);
+                    no.setTl(no.getTl()-1);
+                }
+                filhoE = no;
+                no = localizarPai(filhoE,info);
+                pos = no.procurarPosicao(info);
+                filhoD = no.getvLig(pos+1);
+                redistribuir_concatenar(filhoE,no,filhoD,pos);
+
+            }
+        }
+    }*/
+
+    private void concatenar(No filhoE, No pai, No filhoD, int pos)
+    {
+        // Move valor do pai entre os dois para o filhoE
+        filhoE.setvInfo(filhoE.getTl(), pai.getvInfo(pos));
+        filhoE.setvPos(filhoE.getTl(), pai.getvPos(pos));
+        filhoE.setTl(filhoE.getTl() + 1);
+
+        for (int i = 0; i < filhoD.getTl(); i++)
+        {
+            filhoE.setvInfo(filhoE.getTl(), filhoD.getvInfo(i));
+            filhoE.setvPos(filhoE.getTl(), filhoD.getvPos(i));
+            filhoE.setTl(filhoE.getTl() + 1);
+        }
+
+        pai.remanejarExclusao(pos);
+        for (int i = pos + 1; i <= pai.getTl(); i++)
+            pai.setvLig(i, pai.getvLig(i + 1));
+
+        pai.setTl(pai.getTl() - 1);
+    }
+
+    public void redistribuir_concatenar(No filhoE, No pai, No filhoD, int pos)
+    {
+        // Redistribui da esquerda para a direita
+        if (filhoE.getTl() > (n / 2))
+        {
+            // Move a última chave de filhoE para a esquerda de filhoD
+            filhoD.remanejar(0);
+            filhoD.setvInfo(0, pai.getvInfo(pos));
+            filhoD.setvPos(0, pai.getvPos(pos));
+            filhoD.setTl(filhoD.getTl() + 1);
+
+            pai.setvInfo(pos, filhoE.getvInfo(filhoE.getTl() - 1));
+            pai.setvPos(pos, filhoE.getvPos(filhoE.getTl() - 1));
+
+            filhoE.setTl(filhoE.getTl() - 1);
+        }
+        // Redistribui da direita para a esquerda
+        else if (filhoD.getTl() > (n / 2))
+        {
+            filhoE.setvInfo(filhoE.getTl(), pai.getvInfo(pos));
+            filhoE.setvPos(filhoE.getTl(), pai.getvPos(pos));
+            filhoE.setTl(filhoE.getTl() + 1);
+
+            pai.setvInfo(pos, filhoD.getvInfo(0));
+            pai.setvPos(pos, filhoD.getvPos(0));
+
+            filhoD.remanejarExclusao(0);
+            filhoD.setTl(filhoD.getTl() - 1);
+        }
+    }
+
+
+    public void exclusao(int info)
+    {
+        int pos, posPai;
+        No folha = buscarNo(info), pai, irmaE, irmaD;
+        if (folha != null)
+        {
+            pos = folha.procurarPosicao(info);
+
+            // Caso 1: Nó interno
+            if (folha.getvLig(0) != null)
+            {
+                // Substitui valor por seu sucessor
+                irmaD = folha.getvLig(pos + 1);
+                while (irmaD.getvLig(0) != null)
+                    irmaD = irmaD.getvLig(0);
+
+                folha.setvInfo(pos, irmaD.getvInfo(0));
+                folha.setvPos(pos, irmaD.getvPos(0));
+                folha = irmaD;
+                pos = 0;
+            }
+
+            // Agora temos o valor na folha
+            folha.remanejarExclusao(pos);
+            folha.setTl(folha.getTl() - 1);
+
+            // Verifica se precisa redistribuir/concatenar
+            if (folha != raiz && folha.getTl() < (n / 2))
+            {
+                pai = localizarPai(folha, folha.getvInfo(0));
+                posPai = pai.procurarPosicao(folha.getvInfo(0));
+                irmaE = (posPai > 0) ? pai.getvLig(posPai - 1) : null;
+                irmaD = (posPai < pai.getTl()) ? pai.getvLig(posPai + 1) : null;
+
+                // Redistribuir ou concatenar
+                if (irmaE != null && irmaE.getTl() > (n / 2))
+                    redistribuir_concatenar(irmaE, pai, folha, posPai - 1);
+                else if (irmaD != null && irmaD.getTl() > (n / 2))
+                    redistribuir_concatenar(folha, pai, irmaD, posPai);
+                else if (irmaE != null)
+                    concatenar(irmaE, pai, folha, posPai - 1);
+                else if (irmaD != null)
+                    concatenar(folha, pai, irmaD, posPai);
+
+            }
+
+            // Se a raiz ficou vazia, ajusta
+            if (raiz.getTl() == 0 && raiz.getvLig(0) != null)
+                raiz = raiz.getvLig(0);
+            else if (raiz.getTl() == 0)
+                raiz = null;
+        }
+    }
+
 
     public void exibir(){
 
@@ -407,6 +590,6 @@ public class BPlusTree
     {
 
     }
-*/
+
 
 }
