@@ -1,4 +1,4 @@
-import java.util.LinkedList;
+/*import java.util.LinkedList;
 import java.util.Queue;
 
 public class BPlusTree
@@ -275,7 +275,7 @@ public class BPlusTree
             if(folha!=raiz && folha.getTl()<No.m)
                 redistribuir_concatenar(folha);
         }
-    }*/
+    }
 
     private No navegarAteFolha(int info)
     {
@@ -305,7 +305,7 @@ public class BPlusTree
         return pai;
     }
 
-    public void split(No folha, No pai)
+    /*public void split(No folha, No pai)
     {
         No avo;
         No cx1 = new No(n);
@@ -373,6 +373,72 @@ public class BPlusTree
             }
         }
     }
+
+    public void split(No folha, No pai) {
+        No avo;
+        No cx1 = new No(n);
+        No cx2 = new No(n);
+        int i, j, pos, m, promovido;
+        boolean ehFolha;
+
+        if (folha.getvLig(0) == null) {
+            m = (n + 1) / 2;
+            ehFolha = true;
+        } else {
+            m = n / 2;
+            ehFolha = false;
+        }
+
+        for (i = 0; i < m; i++) {
+            cx1.setvInfo(i, folha.getvInfo(i));
+            cx1.setvPos(i, folha.getvPos(i));
+            cx1.setTl(cx1.getTl() + 1);
+            if (!ehFolha)
+                cx1.setvLig(i, folha.getvLig(i));
+        }
+        if (!ehFolha)
+            cx1.setvLig(i, folha.getvLig(i));
+
+        for (j = 0; i < folha.getTl(); i++, j++) {
+            cx2.setvInfo(j, folha.getvInfo(i));
+            cx2.setvPos(j, folha.getvPos(i));
+            cx2.setTl(cx2.getTl() + 1);
+            if (!ehFolha)
+                cx2.setvLig(j, folha.getvLig(i));
+        }
+        if (!ehFolha)
+            cx2.setvLig(j, folha.getvLig(i));
+
+        if (ehFolha) {
+            // encadeamento das folhas
+            cx1.setvLig(n, cx2);
+            cx2.setvLig(n, folha.getvLig(n));
+        }
+
+        promovido = cx2.getvInfo(0); // chave de separação
+        if (folha == raiz) {
+            raiz = new No(n);
+            raiz.setvInfo(0, promovido);
+            raiz.setvPos(0, cx2.getvPos(0));
+            raiz.setvLig(0, cx1);
+            raiz.setvLig(1, cx2);
+            raiz.setTl(1);
+        } else {
+            pos = pai.procurarPosicao(promovido);
+            pai.remanejar(pos);
+            pai.setvInfo(pos, promovido);
+            pai.setvPos(pos, cx2.getvPos(0));
+            pai.setvLig(pos, cx1);
+            pai.setvLig(pos + 1, cx2);
+            pai.setTl(pai.getTl() + 1);
+
+            if (pai.getTl() > n - 1) {
+                avo = localizarPai(pai, pai.getvInfo(0));
+                split(pai, avo);
+            }
+        }
+    }
+
 
     public void inserir(int info, int posArq){
 
@@ -473,7 +539,7 @@ public class BPlusTree
 
             }
         }
-    }*/
+    }
 
     public void excluir(int valor) {
         if (raiz == null) return;
@@ -575,7 +641,7 @@ public class BPlusTree
 
     public void exibir() {
         if (raiz == null) {
-            System.out.println("(árvore vazia)");
+            System.out.println("(Árvore B+ vazia)");
             return;
         }
 
@@ -597,17 +663,24 @@ public class BPlusTree
                 System.out.print("Nível " + nivel + ": ");
             }
 
-            // Imprime o conteúdo do nó
+            // Verifica se é folha
+            boolean ehFolha = (atual.getvLig(0) == null);
+            if (ehFolha)
+                System.out.print("FOLHA ");
+            else
+                System.out.print("INTERNO ");
+
+            // Imprime os valores do nó
             System.out.print("[");
             for (int i = 0; i < atual.getTl(); i++) {
                 System.out.print(atual.getvInfo(i));
                 if (i < atual.getTl() - 1)
                     System.out.print("|");
             }
-            System.out.print("] ");
+            System.out.print("]  ");
 
             // Adiciona os filhos na fila se não for folha
-            if (atual.getvLig(0) != null) {
+            if (!ehFolha) {
                 for (int i = 0; i <= atual.getTl(); i++) {
                     if (atual.getvLig(i) != null) {
                         fila.add(atual.getvLig(i));
@@ -621,6 +694,7 @@ public class BPlusTree
     }
 
 
+
     public void in_ordem()
     {
         in_ordem(raiz);
@@ -632,4 +706,212 @@ public class BPlusTree
     }
 
 
+}*/
+
+
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class BPlusTree {
+    private No raiz;
+    private int n;
+
+    public BPlusTree(int n) {
+        raiz = null;
+        this.n = n;
+    }
+
+    private No navegarAteFolha(int info) {
+        No no = raiz;
+        int pos;
+        while (no.getvLig(0) != null) {
+            pos = no.procurarPosicao(info);
+            no = no.getvLig(pos);
+        }
+        return no;
+    }
+
+    private No localizarPai(No folha, int info) {
+        if (folha == null || folha == raiz)
+            return null;
+
+        No no = raiz, pai = null;
+        int pos;
+        while (no != null && no.getvLig(0) != null) {
+            pos = no.procurarPosicao(info);
+            if (no.getvLig(pos) == folha) return no;
+            pai = no;
+            no = no.getvLig(pos);
+        }
+        return null;
+    }
+
+    public void split(No no, No pai) {
+        // Se o nó é folha: não tem filhos (vLig(0) == null)
+        if (no.getvLig(0) == null) {
+            // SPLIT DE NÓ FOLHA
+
+            int meio = (int) Math.ceil((n - 1) / 2.0);  // Exemplo: para n=4, meio=2
+
+            No folha1 = new No(n);
+            No folha2 = new No(n);
+
+            // Copiar metade esquerda para folha1
+            for (int i = 0; i < meio; i++) {
+                folha1.setvInfo(i, no.getvInfo(i));
+                folha1.setvPos(i, no.getvPos(i));
+            }
+            folha1.setTl(meio);
+
+            // Copiar metade direita para folha2
+            for (int i = meio, j = 0; i < no.getTl(); i++, j++) {
+                folha2.setvInfo(j, no.getvInfo(i));
+                folha2.setvPos(j, no.getvPos(i));
+            }
+            folha2.setTl(no.getTl() - meio);
+
+            // Ajustar encadeamento das folhas
+            folha2.setvLig(n, no.getvLig(n));  // folha2 aponta para próximo da folha original
+            folha1.setvLig(n, folha2);          // folha1 aponta para folha2
+
+            int promovido = folha2.getvInfo(0);  // valor promovido para o pai (primeiro da folha2)
+
+            if (no == raiz || pai == null) {
+                // Criar nova raiz se o nó original era raiz
+                raiz = new No(n);
+                raiz.setvInfo(0, promovido);
+                raiz.setvLig(0, folha1);
+                raiz.setvLig(1, folha2);
+                raiz.setTl(1);
+            } else {
+                // Inserir valor promovido no pai
+                int pos = pai.procurarPosicao(promovido);
+                pai.remanejar(pos);
+                pai.setvInfo(pos, promovido);
+                pai.setvLig(pos, folha1);
+                pai.setvLig(pos + 1, folha2);
+                pai.setTl(pai.getTl() + 1);
+
+                // Se o pai estourou, recursivamente fazer split no pai
+                if (pai.getTl() > n - 1) {
+                    No avo = localizarPai(pai, pai.getvInfo(0));
+                    split(pai, avo);
+                }
+            }
+
+        } else {
+            // SPLIT DE NÓ INTERNO
+
+            int meio = n / 2;  // Exemplo: n=4, meio=2
+
+            int promovido = no.getvInfo(meio);  // valor do meio para promover
+
+            No interno1 = new No(n);
+            No interno2 = new No(n);
+
+            // Copiar para interno1 os valores e filhos da esquerda (antes do meio)
+            for (int i = 0; i < meio; i++) {
+                interno1.setvInfo(i, no.getvInfo(i));
+                interno1.setvLig(i, no.getvLig(i));
+            }
+            interno1.setvLig(meio, no.getvLig(meio));  // filho a direita do último valor copiado
+            interno1.setTl(meio);
+
+            // Copiar para interno2 os valores e filhos da direita (após meio)
+            int j = 0;
+            for (int i = meio + 1; i < no.getTl(); i++, j++) {
+                interno2.setvInfo(j, no.getvInfo(i));
+                interno2.setvLig(j, no.getvLig(i));
+            }
+            interno2.setvLig(j, no.getvLig(no.getTl()));  // último filho
+            interno2.setTl(no.getTl() - meio - 1);
+
+            if (no == raiz || pai == null) {
+                // Criar nova raiz se necessário
+                raiz = new No(n);
+                raiz.setvInfo(0, promovido);
+                raiz.setvLig(0, interno1);
+                raiz.setvLig(1, interno2);
+                raiz.setTl(1);
+            } else {
+                // Inserir promovido no pai
+                int pos = pai.procurarPosicao(promovido);
+                pai.remanejar(pos);
+                pai.setvInfo(pos, promovido);
+                pai.setvLig(pos, interno1);
+                pai.setvLig(pos + 1, interno2);
+                pai.setTl(pai.getTl() + 1);
+
+                // Se pai estourou, split recursivo
+                if (pai.getTl() > n - 1) {
+                    No avo = localizarPai(pai, pai.getvInfo(0));
+                    split(pai, avo);
+                }
+            }
+        }
+    }
+
+    public void inserir(int info, int posArq) {
+        if (raiz == null)
+            raiz = new No(n, info, posArq);
+        else {
+            No folha = navegarAteFolha(info);
+            int pos = folha.procurarPosicao(info);
+            folha.remanejar(pos);
+            folha.setvInfo(pos, info);
+            folha.setvPos(pos, posArq);
+            folha.setTl(folha.getTl() + 1);
+            if (folha.getTl() > n - 1) {
+                No pai = localizarPai(folha, info);
+                split(folha, pai);
+            }
+        }
+    }
+
+    public void exibir() {
+        if (raiz == null) {
+            System.out.println("(Árvore B+ vazia)");
+            return;
+        }
+
+        Queue<No> fila = new LinkedList<>();
+        Queue<Integer> niveis = new LinkedList<>();
+
+        fila.add(raiz);
+        niveis.add(0);
+
+        int nivelAtual = -1;
+
+        while (!fila.isEmpty()) {
+            No atual = fila.poll();
+            int nivel = niveis.poll();
+
+            if (nivel != nivelAtual) {
+                nivelAtual = nivel;
+                System.out.println(); // quebra de linha para novo nível
+                System.out.print("Nível " + nivel + ": ");
+            }
+
+            boolean ehFolha = (atual.getvLig(0) == null);
+            System.out.print((ehFolha ? "FOLHA " : "INTERNO ") + "[");
+
+            for (int i = 0; i < atual.getTl(); i++) {
+                System.out.print(atual.getvInfo(i));
+                if (i < atual.getTl() - 1)
+                    System.out.print("|");
+            }
+            System.out.print("]  ");
+
+            if (!ehFolha) {
+                for (int i = 0; i <= atual.getTl(); i++) {
+                    if (atual.getvLig(i) != null) {
+                        fila.add(atual.getvLig(i));
+                        niveis.add(nivel + 1);
+                    }
+                }
+            }
+        }
+        System.out.println(); // última quebra de linha
+    }
 }
+

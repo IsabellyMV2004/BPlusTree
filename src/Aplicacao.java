@@ -2,7 +2,7 @@ public class Aplicacao
 {
     public static void main(String[] args) {
 
-        BPlusTree b = new BPlusTree(4);
+      /*  BPlusTree b = new BPlusTree(4);
         System.out.println("INSERINDO VALORES:");
         for (int i = 1; i <= 100; i++) {
             System.out.printf(i+" ");
@@ -22,5 +22,14 @@ public class Aplicacao
         }
         System.out.println("------------------------------");
         b.exibir();*/
+
+        BPlusTree arvore = new BPlusTree(4); // ordem da árvore
+
+        for (int i = 1; i <= 14; i++) {
+            arvore.inserir(i, i * 10); // info, posArq fictício
+            arvore.exibir();
+            System.out.println();
+        }
+
     }
 }
