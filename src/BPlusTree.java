@@ -712,34 +712,41 @@ public class BPlusTree
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class BPlusTree {
+public class BPlusTree
+{
     private No raiz;
     private int n;
 
-    public BPlusTree(int n) {
+    public BPlusTree(int n)
+    {
         raiz = null;
         this.n = n;
     }
 
-    private No navegarAteFolha(int info) {
+    private No navegarAteFolha(int info)
+    {
         No no = raiz;
         int pos;
-        while (no.getvLig(0) != null) {
+        while (no.getvLig(0) != null)
+        {
             pos = no.procurarPosicao(info);
             no = no.getvLig(pos);
         }
         return no;
     }
 
-    private No localizarPai(No folha, int info) {
+    private No localizarPai(No folha, int info)
+    {
         if (folha == null || folha == raiz)
             return null;
 
         No no = raiz, pai = null;
         int pos;
-        while (no != null && no.getvLig(0) != null) {
+        while (no != null && no.getvLig(0) != null)
+        {
             pos = no.procurarPosicao(info);
-            if (no.getvLig(pos) == folha) return no;
+            if (no.getvLig(pos) == folha)
+                return no;
             pai = no;
             no = no.getvLig(pos);
         }
@@ -747,104 +754,91 @@ public class BPlusTree {
     }
 
     public void split(No no, No pai) {
-        // Se o nó é folha: não tem filhos (vLig(0) == null)
-        if (no.getvLig(0) == null) {
-            // SPLIT DE NÓ FOLHA
+        No aux1 = new No(n), aux2 = new No(n), avo;
+        int meio, promovido, pos, j = 0;
 
-            int meio = (int) Math.ceil((n - 1) / 2.0);  // Exemplo: para n=4, meio=2
-
-            No folha1 = new No(n);
-            No folha2 = new No(n);
-
-            // Copiar metade esquerda para folha1
-            for (int i = 0; i < meio; i++) {
-                folha1.setvInfo(i, no.getvInfo(i));
-                folha1.setvPos(i, no.getvPos(i));
+        if (no.getvLig(0) == null)
+        {
+            meio = (int) Math.ceil((n - 1) / 2.0);
+            for (int i = 0; i < meio; i++)
+            {
+                aux1.setvInfo(i, no.getvInfo(i));
+                aux1.setvPos(i, no.getvPos(i));
             }
-            folha1.setTl(meio);
+            aux1.setTl(meio);
 
-            // Copiar metade direita para folha2
-            for (int i = meio, j = 0; i < no.getTl(); i++, j++) {
-                folha2.setvInfo(j, no.getvInfo(i));
-                folha2.setvPos(j, no.getvPos(i));
+            for (int i = meio; i < no.getTl(); i++, j++)
+            {
+                aux2.setvInfo(j, no.getvInfo(i));
+                aux2.setvPos(j, no.getvPos(i));
             }
-            folha2.setTl(no.getTl() - meio);
+            aux2.setTl(no.getTl() - meio);
 
-            // Ajustar encadeamento das folhas
-            folha2.setvLig(n, no.getvLig(n));  // folha2 aponta para próximo da folha original
-            folha1.setvLig(n, folha2);          // folha1 aponta para folha2
+            aux2.setvLig(n, no.getvLig(n));
+            aux1.setvLig(n, aux2);
+            promovido = aux2.getvInfo(0);
 
-            int promovido = folha2.getvInfo(0);  // valor promovido para o pai (primeiro da folha2)
-
-            if (no == raiz || pai == null) {
-                // Criar nova raiz se o nó original era raiz
+            if (no == raiz || pai == null)
+            {
                 raiz = new No(n);
                 raiz.setvInfo(0, promovido);
-                raiz.setvLig(0, folha1);
-                raiz.setvLig(1, folha2);
+                raiz.setvLig(0, aux1);
+                raiz.setvLig(1, aux2);
                 raiz.setTl(1);
-            } else {
-                // Inserir valor promovido no pai
-                int pos = pai.procurarPosicao(promovido);
+            }
+            else {
+                pos = pai.procurarPosicao(promovido);
                 pai.remanejar(pos);
                 pai.setvInfo(pos, promovido);
-                pai.setvLig(pos, folha1);
-                pai.setvLig(pos + 1, folha2);
+                pai.setvLig(pos, aux1);
+                pai.setvLig(pos + 1, aux2);
                 pai.setTl(pai.getTl() + 1);
-
-                // Se o pai estourou, recursivamente fazer split no pai
-                if (pai.getTl() > n - 1) {
-                    No avo = localizarPai(pai, pai.getvInfo(0));
+                if (pai.getTl() > n - 1)
+                {
+                    avo = localizarPai(pai, pai.getvInfo(0));
                     split(pai, avo);
                 }
             }
 
-        } else {
-            // SPLIT DE NÓ INTERNO
-
-            int meio = n / 2;  // Exemplo: n=4, meio=2
-
-            int promovido = no.getvInfo(meio);  // valor do meio para promover
-
-            No interno1 = new No(n);
-            No interno2 = new No(n);
-
-            // Copiar para interno1 os valores e filhos da esquerda (antes do meio)
+        }
+        else
+        {
+            meio = (int) Math.ceil((n/2.0)-1);
+            promovido = no.getvInfo(meio);
             for (int i = 0; i < meio; i++) {
-                interno1.setvInfo(i, no.getvInfo(i));
-                interno1.setvLig(i, no.getvLig(i));
+                aux1.setvInfo(i, no.getvInfo(i));
+                aux1.setvLig(i, no.getvLig(i));
             }
-            interno1.setvLig(meio, no.getvLig(meio));  // filho a direita do último valor copiado
-            interno1.setTl(meio);
+            aux1.setvLig(meio, no.getvLig(meio));
+            aux1.setTl(meio);
 
-            // Copiar para interno2 os valores e filhos da direita (após meio)
-            int j = 0;
-            for (int i = meio + 1; i < no.getTl(); i++, j++) {
-                interno2.setvInfo(j, no.getvInfo(i));
-                interno2.setvLig(j, no.getvLig(i));
+            for (int i = meio + 1; i < no.getTl(); i++, j++)
+            {
+                aux2.setvInfo(j, no.getvInfo(i));
+                aux2.setvLig(j, no.getvLig(i));
             }
-            interno2.setvLig(j, no.getvLig(no.getTl()));  // último filho
-            interno2.setTl(no.getTl() - meio - 1);
+            aux2.setvLig(j, no.getvLig(no.getTl()));
+            aux2.setTl(no.getTl() - meio - 1);
 
-            if (no == raiz || pai == null) {
-                // Criar nova raiz se necessário
+            if (no == raiz || pai == null)
+            {
                 raiz = new No(n);
                 raiz.setvInfo(0, promovido);
-                raiz.setvLig(0, interno1);
-                raiz.setvLig(1, interno2);
+                raiz.setvLig(0, aux1);
+                raiz.setvLig(1, aux2);
                 raiz.setTl(1);
-            } else {
-                // Inserir promovido no pai
-                int pos = pai.procurarPosicao(promovido);
+            }
+            else
+            {
+                pos = pai.procurarPosicao(promovido);
                 pai.remanejar(pos);
                 pai.setvInfo(pos, promovido);
-                pai.setvLig(pos, interno1);
-                pai.setvLig(pos + 1, interno2);
+                pai.setvLig(pos, aux1);
+                pai.setvLig(pos + 1, aux2);
                 pai.setTl(pai.getTl() + 1);
-
-                // Se pai estourou, split recursivo
-                if (pai.getTl() > n - 1) {
-                    No avo = localizarPai(pai, pai.getvInfo(0));
+                if (pai.getTl() > n - 1)
+                {
+                    avo = localizarPai(pai, pai.getvInfo(0));
                     split(pai, avo);
                 }
             }

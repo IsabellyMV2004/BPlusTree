@@ -25,7 +25,7 @@ public class Aplicacao
 
         BPlusTree arvore = new BPlusTree(4); // ordem da árvore
 
-        for (int i = 1; i <= 14; i++) {
+        for (int i = 1; i <= 20; i++) {
             arvore.inserir(i, i * 10); // info, posArq fictício
             arvore.exibir();
             System.out.println();
