@@ -862,49 +862,42 @@ public class BPlusTree
     }
 
     public void exibir() {
-        if (raiz == null) {
-            System.out.println("(Árvore B+ vazia)");
-            return;
-        }
-
+        int nivelAtual = -1,nivel;
+        No atual;
+        boolean folha;
         Queue<No> fila = new LinkedList<>();
         Queue<Integer> niveis = new LinkedList<>();
-
         fila.add(raiz);
         niveis.add(0);
-
-        int nivelAtual = -1;
-
-        while (!fila.isEmpty()) {
-            No atual = fila.poll();
-            int nivel = niveis.poll();
-
-            if (nivel != nivelAtual) {
+        while (!fila.isEmpty())
+        {
+            atual = fila.poll();
+            nivel = niveis.poll();
+            if (nivel != nivelAtual)
+            {
                 nivelAtual = nivel;
-                System.out.println(); // quebra de linha para novo nível
+                System.out.println();
                 System.out.print("Nível " + nivel + ": ");
             }
-
-            boolean ehFolha = (atual.getvLig(0) == null);
+            folha = (atual.getvLig(0) == null);
             System.out.print("[");
 
-            for (int i = 0; i < atual.getTl(); i++) {
+            for (int i = 0; i < atual.getTl(); i++)
+            {
                 System.out.print(atual.getvInfo(i));
                 if (i < atual.getTl() - 1)
                     System.out.print("|");
             }
             System.out.print("]  ");
-
-            if (!ehFolha) {
-                for (int i = 0; i <= atual.getTl(); i++) {
-                    if (atual.getvLig(i) != null) {
+            if (!folha)
+                for (int i = 0; i <= atual.getTl(); i++)
+                    if (atual.getvLig(i) != null)
+                    {
                         fila.add(atual.getvLig(i));
                         niveis.add(nivel + 1);
                     }
-                }
-            }
         }
-        System.out.println(); // última quebra de linha
+        System.out.println();
     }
 }
 
