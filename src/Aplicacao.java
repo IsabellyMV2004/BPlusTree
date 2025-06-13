@@ -2,18 +2,19 @@ public class Aplicacao
 {
     public static void main(String[] args) {
 
-      /*  BPlusTree b = new BPlusTree(4);
-        System.out.println("INSERINDO VALORES:");
-        for (int i = 1; i <= 100; i++) {
+        System.out.println("\n\nN = 4");
+        BPlusTree b = new BPlusTree(4);
+        System.out.println("\nINSERINDO VALORES:");
+        for (int i = 1; i <= 300; i++) {
             System.out.printf(i+" ");
             if(i%20 == 0)
                 System.out.println();
             b.inserir(i,0);
-            b.exibir();
         }
+        System.out.println("\n\n# # # ARVORE B+TREE # # #");
+        b.exibir();
 
-
-       /* System.out.println("EXCLUIR VALORES:");
+        /*System.out.println("EXCLUIR VALORES:");
         for(int i = 50; i> 0; i--){
             System.out.printf(i+" ");
             if(i%20 == 0)
@@ -23,13 +24,30 @@ public class Aplicacao
         System.out.println("------------------------------");
         b.exibir();*/
 
-        BPlusTree arvore = new BPlusTree(4); // ordem da árvore
 
-        for (int i = 1; i <= 20; i++) {
-            arvore.inserir(i, i * 10); // info, posArq fictício
-            arvore.exibir();
-            System.out.println();
+        System.out.println("\n\n\n-------------------------------------------------------------------------------\n");
+        System.out.println("N = 5");
+        b = new BPlusTree(5);
+        System.out.println("\nINSERINDO VALORES:");
+        for (int i = 1; i <= 300; i++) {
+            System.out.printf(i+" ");
+            if(i%20 == 0)
+                System.out.println();
+            b.inserir(i,0);
         }
+        System.out.println("\n\n# # # ARVORE B+TREE # # #");
+        b.exibir();
+
+        /*System.out.println("EXCLUIR VALORES:");
+        for(int i = 50; i> 0; i--){
+            System.out.printf(i+" ");
+            if(i%20 == 0)
+                System.out.println();
+            b.excluir(i);
+        }
+        System.out.println("------------------------------");
+        b.exibir();*/
+
 
     }
 }
