@@ -886,7 +886,7 @@ public class BPlusTree
             }
 
             boolean ehFolha = (atual.getvLig(0) == null);
-            System.out.print((ehFolha ? "FOLHA " : "INTERNO ") + "[");
+            System.out.print("[");
 
             for (int i = 0; i < atual.getTl(); i++) {
                 System.out.print(atual.getvInfo(i));
