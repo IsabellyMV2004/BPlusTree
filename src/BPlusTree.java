@@ -1,3 +1,6 @@
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class BPlusTree
 {
     private No raiz;
@@ -288,6 +291,9 @@ public class BPlusTree
 
     private No localizarPai(No folha, int info)
     {
+        if(folha==null)
+            return null;
+
         No no = raiz, pai = raiz;
         int pos;
         while(no != folha)
@@ -469,117 +475,151 @@ public class BPlusTree
         }
     }*/
 
-    private void concatenar(No filhoE, No pai, No filhoD, int pos)
-    {
-        // Move valor do pai entre os dois para o filhoE
-        filhoE.setvInfo(filhoE.getTl(), pai.getvInfo(pos));
-        filhoE.setvPos(filhoE.getTl(), pai.getvPos(pos));
-        filhoE.setTl(filhoE.getTl() + 1);
+    public void excluir(int valor) {
+        if (raiz == null) return;
 
-        for (int i = 0; i < filhoD.getTl(); i++)
-        {
-            filhoE.setvInfo(filhoE.getTl(), filhoD.getvInfo(i));
-            filhoE.setvPos(filhoE.getTl(), filhoD.getvPos(i));
-            filhoE.setTl(filhoE.getTl() + 1);
+        No folha = navegarAteFolha(valor);
+        int pos = folha.procurarPosicao(valor);
+
+        if (pos >= folha.getTl() || folha.getvInfo(pos) != valor) {
+            // Valor não está presente
+            return;
         }
 
-        pai.remanejarExclusao(pos);
-        for (int i = pos + 1; i <= pai.getTl(); i++)
-            pai.setvLig(i, pai.getvLig(i + 1));
+        // 1. Remove valor da folha
+        folha.remanejarExclusao(pos);
+        folha.setTl(folha.getTl() - 1);
 
-        pai.setTl(pai.getTl() - 1);
-    }
-
-    public void redistribuir_concatenar(No filhoE, No pai, No filhoD, int pos)
-    {
-        // Redistribui da esquerda para a direita
-        if (filhoE.getTl() > (n / 2))
-        {
-            // Move a última chave de filhoE para a esquerda de filhoD
-            filhoD.remanejar(0);
-            filhoD.setvInfo(0, pai.getvInfo(pos));
-            filhoD.setvPos(0, pai.getvPos(pos));
-            filhoD.setTl(filhoD.getTl() + 1);
-
-            pai.setvInfo(pos, filhoE.getvInfo(filhoE.getTl() - 1));
-            pai.setvPos(pos, filhoE.getvPos(filhoE.getTl() - 1));
-
-            filhoE.setTl(filhoE.getTl() - 1);
+        // 2. Se é a raiz e está vazia, elimina a raiz
+        if (folha == raiz && folha.getTl() == 0) {
+            raiz = null;
+            return;
         }
-        // Redistribui da direita para a esquerda
-        else if (filhoD.getTl() > (n / 2))
-        {
-            filhoE.setvInfo(filhoE.getTl(), pai.getvInfo(pos));
-            filhoE.setvPos(filhoE.getTl(), pai.getvPos(pos));
-            filhoE.setTl(filhoE.getTl() + 1);
 
-            pai.setvInfo(pos, filhoD.getvInfo(0));
-            pai.setvPos(pos, filhoD.getvPos(0));
+        // 3. Verifica se a folha ficou com menos do que o mínimo necessário
+        if (folha != raiz && folha.getTl() < Math.ceil(n / 2.0)) {
+            No pai = localizarPai(folha, valor);
+            int posPai = -1;
 
-            filhoD.remanejarExclusao(0);
-            filhoD.setTl(filhoD.getTl() - 1);
-        }
-    }
-
-
-    public void exclusao(int info)
-    {
-        int pos, posPai;
-        No folha = buscarNo(info), pai, irmaE, irmaD;
-        if (folha != null)
-        {
-            pos = folha.procurarPosicao(info);
-
-            // Caso 1: Nó interno
-            if (folha.getvLig(0) != null)
-            {
-                // Substitui valor por seu sucessor
-                irmaD = folha.getvLig(pos + 1);
-                while (irmaD.getvLig(0) != null)
-                    irmaD = irmaD.getvLig(0);
-
-                folha.setvInfo(pos, irmaD.getvInfo(0));
-                folha.setvPos(pos, irmaD.getvPos(0));
-                folha = irmaD;
-                pos = 0;
+            for (int i = 0; i <= pai.getTl(); i++) {
+                if (pai.getvLig(i) == folha) {
+                    posPai = i;
+                    break;
+                }
             }
 
-            // Agora temos o valor na folha
-            folha.remanejarExclusao(pos);
-            folha.setTl(folha.getTl() - 1);
+            // Irmãos
+            No irmaoEsq = (posPai > 0) ? pai.getvLig(posPai - 1) : null;
+            No irmaoDir = (posPai < pai.getTl()) ? pai.getvLig(posPai + 1) : null;
 
-            // Verifica se precisa redistribuir/concatenar
-            if (folha != raiz && folha.getTl() < (n / 2))
-            {
-                pai = localizarPai(folha, folha.getvInfo(0));
-                posPai = pai.procurarPosicao(folha.getvInfo(0));
-                irmaE = (posPai > 0) ? pai.getvLig(posPai - 1) : null;
-                irmaD = (posPai < pai.getTl()) ? pai.getvLig(posPai + 1) : null;
-
-                // Redistribuir ou concatenar
-                if (irmaE != null && irmaE.getTl() > (n / 2))
-                    redistribuir_concatenar(irmaE, pai, folha, posPai - 1);
-                else if (irmaD != null && irmaD.getTl() > (n / 2))
-                    redistribuir_concatenar(folha, pai, irmaD, posPai);
-                else if (irmaE != null)
-                    concatenar(irmaE, pai, folha, posPai - 1);
-                else if (irmaD != null)
-                    concatenar(folha, pai, irmaD, posPai);
-
+            // 3.1 Tenta redistribuir com irmão esquerdo
+            if (irmaoEsq != null && irmaoEsq.getTl() > Math.ceil(n / 2.0)) {
+                // Desloca elementos para frente
+                folha.remanejar(0);
+                folha.setvInfo(0, irmaoEsq.getvInfo(irmaoEsq.getTl() - 1));
+                folha.setTl(folha.getTl() + 1);
+                irmaoEsq.setTl(irmaoEsq.getTl() - 1);
+                pai.setvInfo(posPai - 1, folha.getvInfo(0));
             }
 
-            // Se a raiz ficou vazia, ajusta
-            if (raiz.getTl() == 0 && raiz.getvLig(0) != null)
-                raiz = raiz.getvLig(0);
-            else if (raiz.getTl() == 0)
-                raiz = null;
+            // 3.2 Tenta redistribuir com irmão direito
+            else if (irmaoDir != null && irmaoDir.getTl() > Math.ceil(n / 2.0)) {
+                folha.setvInfo(folha.getTl(), irmaoDir.getvInfo(0));
+                folha.setTl(folha.getTl() + 1);
+                irmaoDir.remanejarExclusao(0);
+                irmaoDir.setTl(irmaoDir.getTl() - 1);
+                pai.setvInfo(posPai, irmaoDir.getvInfo(0));
+            }
+
+            // 3.3 Se não for possível redistribuir, concatena com o irmão
+            else if (irmaoEsq != null) {
+                // Concatena folha na esquerda
+                for (int i = 0; i < folha.getTl(); i++) {
+                    irmaoEsq.setvInfo(irmaoEsq.getTl(), folha.getvInfo(i));
+                    irmaoEsq.setTl(irmaoEsq.getTl() + 1);
+                }
+
+                // Remove referência no pai
+                pai.remanejarExclusao(posPai - 1);
+                for (int i = posPai; i < pai.getTl(); i++) {
+                    pai.setvLig(i, pai.getvLig(i + 1));
+                }
+                pai.setTl(pai.getTl() - 1);
+
+                // Ajusta raiz se pai ficar vazio
+                if (pai == raiz && pai.getTl() == 0) {
+                    raiz = irmaoEsq;
+                }
+
+            } else if (irmaoDir != null) {
+                // Concatena irmão direito na folha
+                for (int i = 0; i < irmaoDir.getTl(); i++) {
+                    folha.setvInfo(folha.getTl(), irmaoDir.getvInfo(i));
+                    folha.setTl(folha.getTl() + 1);
+                }
+
+                // Remove referência no pai
+                pai.remanejarExclusao(posPai);
+                for (int i = posPai + 1; i <= pai.getTl(); i++) {
+                    pai.setvLig(i, pai.getvLig(i + 1));
+                }
+                pai.setTl(pai.getTl() - 1);
+
+                if (pai == raiz && pai.getTl() == 0) {
+                    raiz = folha;
+                }
+            }
         }
     }
 
 
-    public void exibir(){
+    public void exibir() {
+        if (raiz == null) {
+            System.out.println("(árvore vazia)");
+            return;
+        }
 
+        Queue<No> fila = new LinkedList<>();
+        Queue<Integer> niveis = new LinkedList<>();
+
+        fila.add(raiz);
+        niveis.add(0);
+
+        int nivelAtual = -1;
+
+        while (!fila.isEmpty()) {
+            No atual = fila.poll();
+            int nivel = niveis.poll();
+
+            if (nivel != nivelAtual) {
+                nivelAtual = nivel;
+                System.out.println(); // quebra de linha para novo nível
+                System.out.print("Nível " + nivel + ": ");
+            }
+
+            // Imprime o conteúdo do nó
+            System.out.print("[");
+            for (int i = 0; i < atual.getTl(); i++) {
+                System.out.print(atual.getvInfo(i));
+                if (i < atual.getTl() - 1)
+                    System.out.print("|");
+            }
+            System.out.print("] ");
+
+            // Adiciona os filhos na fila se não for folha
+            if (atual.getvLig(0) != null) {
+                for (int i = 0; i <= atual.getTl(); i++) {
+                    if (atual.getvLig(i) != null) {
+                        fila.add(atual.getvLig(i));
+                        niveis.add(nivel + 1);
+                    }
+                }
+            }
+        }
+
+        System.out.println(); // última quebra de linha
     }
+
 
     public void in_ordem()
     {
