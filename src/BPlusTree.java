@@ -753,7 +753,8 @@ public class BPlusTree
         return null;
     }
 
-    public void split(No no, No pai) {
+    public void split(No no, No pai)
+    {
         No aux1 = new No(n), aux2 = new No(n), avo;
         int meio, promovido, pos, j = 0;
 
@@ -766,14 +767,12 @@ public class BPlusTree
                 aux1.setvPos(i, no.getvPos(i));
             }
             aux1.setTl(meio);
-
             for (int i = meio; i < no.getTl(); i++, j++)
             {
                 aux2.setvInfo(j, no.getvInfo(i));
                 aux2.setvPos(j, no.getvPos(i));
             }
             aux2.setTl(no.getTl() - meio);
-
             aux2.setvLig(n, no.getvLig(n));
             aux1.setvLig(n, aux2);
             promovido = aux2.getvInfo(0);
@@ -786,7 +785,8 @@ public class BPlusTree
                 raiz.setvLig(1, aux2);
                 raiz.setTl(1);
             }
-            else {
+            else
+            {
                 pos = pai.procurarPosicao(promovido);
                 pai.remanejar(pos);
                 pai.setvInfo(pos, promovido);
@@ -799,7 +799,6 @@ public class BPlusTree
                     split(pai, avo);
                 }
             }
-
         }
         else
         {
