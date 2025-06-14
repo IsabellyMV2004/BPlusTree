@@ -709,9 +709,6 @@ public class BPlusTree
 }*/
 
 
-//import java.util.LinkedList;
-//import java.util.Queue;
-
 public class BPlusTree
 {
     private No raiz;
@@ -737,20 +734,18 @@ public class BPlusTree
 
     private No localizarPai(No folha, int info)
     {
-        if (folha == null || folha == raiz)
+        if(folha==null)
             return null;
 
-        No no = raiz, pai = null;
+        No no = raiz, pai = raiz;
         int pos;
-        while (no != null && no.getvLig(0) != null)
+        while(no != folha)
         {
-            pos = no.procurarPosicao(info);
-            if (no.getvLig(pos) == folha)
-                return no;
             pai = no;
+            pos = no.procurarPosicao(info);
             no = no.getvLig(pos);
         }
-        return null;
+        return pai;
     }
 
     public void split(No no, No pai)
@@ -760,7 +755,7 @@ public class BPlusTree
 
         if (no.getvLig(0) == null)
         {
-            meio = (int) Math.ceil((n - 1) / 2.0);
+            meio = (int) Math.ceil((n - 1) / 2.0); // arredonda pra cima
             for (int i = 0; i < meio; i++)
             {
                 aux1.setvInfo(i, no.getvInfo(i));
@@ -802,9 +797,10 @@ public class BPlusTree
         }
         else
         {
-            meio = (int) Math.ceil((n/2.0)-1);
+            meio = (int) Math.ceil((n/2.0)-1);  // arredonda pra cima
             promovido = no.getvInfo(meio);
-            for (int i = 0; i < meio; i++) {
+            for (int i = 0; i < meio; i++)
+            {
                 aux1.setvInfo(i, no.getvInfo(i));
                 aux1.setvLig(i, no.getvLig(i));
             }
@@ -845,93 +841,22 @@ public class BPlusTree
     }
 
     public void inserir(int info, int posArq) {
+        No folha, pai;
+        int pos;
         if (raiz == null)
             raiz = new No(n, info, posArq);
         else {
-            No folha = navegarAteFolha(info);
-            int pos = folha.procurarPosicao(info);
+            folha = navegarAteFolha(info);
+            pos = folha.procurarPosicao(info);
             folha.remanejar(pos);
             folha.setvInfo(pos, info);
             folha.setvPos(pos, posArq);
             folha.setTl(folha.getTl() + 1);
-            if (folha.getTl() > n - 1) {
-                No pai = localizarPai(folha, info);
+            if (folha.getTl() > n - 1)
+            {
+                pai = localizarPai(folha, info);
                 split(folha, pai);
             }
-        }
-    }
-    private void removerPai(No pai, int pos) {
-        // Remove chave e ligação no pai
-        for (int j = pos; j < pai.getTl() - 1; j++) {
-            pai.setvInfo(j, pai.getvInfo(j + 1));
-            pai.setvLig(j + 1, pai.getvLig(j + 2));
-        }
-        pai.setTl(pai.getTl() - 1);
-        pai.setvInfo(pai.getTl(), 0);
-        pai.setvLig(pai.getTl() + 1, null);
-    }
-
-    private void balancearFilhoInterno(No pai, int pos) {
-        No filho = pai.getvLig(pos);
-        int min = (int) Math.ceil((n - 1) / 2.0);
-        No irmaoE = pos > 0 ? pai.getvLig(pos - 1) : null;
-        No irmaoD = pos < pai.getTl() ? pai.getvLig(pos + 1) : null;
-
-        // Redistribui com irmão esquerdo
-        if (irmaoE != null && irmaoE.getTl() > min) {
-            for (int j = filho.getTl(); j > 0; j--) {
-                filho.setvInfo(j, filho.getvInfo(j - 1));
-                filho.setvLig(j + 1, filho.getvLig(j));
-            }
-            filho.setvInfo(0, pai.getvInfo(pos - 1));
-            filho.setvLig(1, filho.getvLig(0));
-            filho.setvLig(0, irmaoE.getvLig(irmaoE.getTl()));
-            pai.setvInfo(pos - 1, irmaoE.getvInfo(irmaoE.getTl() - 1));
-            irmaoE.setTl(irmaoE.getTl() - 1);
-            filho.setTl(filho.getTl() + 1);
-        }
-
-        // Redistribui com irmão direito
-        else if (irmaoD != null && irmaoD.getTl() > min) {
-            filho.setvInfo(filho.getTl(), pai.getvInfo(pos));
-            filho.setvLig(filho.getTl() + 1, irmaoD.getvLig(0));
-            pai.setvInfo(pos, irmaoD.getvInfo(0));
-            for (int j = 0; j < irmaoD.getTl() - 1; j++) {
-                irmaoD.setvInfo(j, irmaoD.getvInfo(j + 1));
-                irmaoD.setvLig(j, irmaoD.getvLig(j + 1));
-            }
-            irmaoD.setvLig(irmaoD.getTl() - 1, irmaoD.getvLig(irmaoD.getTl()));
-            irmaoD.setTl(irmaoD.getTl() - 1);
-            filho.setTl(filho.getTl() + 1);
-        }
-
-        // Concatena com irmão esquerdo
-        else if (irmaoE != null) {
-            int tlIrmao = irmaoE.getTl();
-            irmaoE.setvInfo(tlIrmao, pai.getvInfo(pos - 1));
-            irmaoE.setTl(tlIrmao + 1);
-            for (int j = 0; j < filho.getTl(); j++) {
-                irmaoE.setvInfo(tlIrmao + 1 + j, filho.getvInfo(j));
-            }
-            for (int j = 0; j <= filho.getTl(); j++) {
-                irmaoE.setvLig(tlIrmao + 1 + j, filho.getvLig(j));
-            }
-            irmaoE.setTl(irmaoE.getTl() + filho.getTl());
-            removerPai(pai, pos - 1);
-        }
-
-        // Concatena com irmão direito
-        else if (irmaoD != null) {
-            filho.setvInfo(filho.getTl(), pai.getvInfo(pos));
-            filho.setTl(filho.getTl() + 1);
-            for (int j = 0; j < irmaoD.getTl(); j++) {
-                filho.setvInfo(filho.getTl() + j, irmaoD.getvInfo(j));
-            }
-            for (int j = 0; j <= irmaoD.getTl(); j++) {
-                filho.setvLig(filho.getTl() + j, irmaoD.getvLig(j));
-            }
-            filho.setTl(filho.getTl() + irmaoD.getTl());
-            removerPai(pai, pos);
         }
     }
 
@@ -1003,22 +928,6 @@ public class BPlusTree
                 in_ordem(raiz.getvLig(raiz.getTl()));
             }
         }
-    }
-
-    public No getRaiz() {
-        return raiz;
-    }
-
-    public void setRaiz(No raiz) {
-        this.raiz = raiz;
-    }
-
-    public int getN() {
-        return n;
-    }
-
-    public void setN(int n) {
-        this.n = n;
     }
 }
 
