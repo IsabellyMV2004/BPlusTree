@@ -1,7 +1,7 @@
-public class Queue {
-    private NoQueue inicio, fim;
+public class Fila {
+    private NoFila inicio, fim;
 
-    public Queue() {
+    public Fila() {
         inicio = fim = null;
     }
 
@@ -10,7 +10,7 @@ public class Queue {
     }
 
     public void enqueue(No elemento) {
-        NoQueue novo = new NoQueue(elemento);
+        NoFila novo = new NoFila(elemento);
         if (isEmpty()) {
             inicio = fim = novo;
         } else {

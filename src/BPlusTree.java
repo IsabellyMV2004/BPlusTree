@@ -866,8 +866,8 @@ public class BPlusTree
 
     public void exibir() {
         No atual;
-        Queue filaNos = new Queue();
-        Queue filaNiveis = new Queue();
+        Fila filaNos = new Fila();
+        Fila filaNiveis = new Fila();
         int nivelAtual = -1, nivel;
 
         if (raiz == null)

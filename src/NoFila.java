@@ -1,8 +1,8 @@
-public class NoQueue {
+public class NoFila {
     private No dado;
-    private NoQueue proximo;
+    private NoFila proximo;
 
-    public NoQueue(No dado) {
+    public NoFila(No dado) {
         this.dado = dado;
         this.proximo = null;
     }
@@ -10,10 +10,10 @@ public class NoQueue {
     public No getDado() {
         return dado;
     }
-    public NoQueue getProximo() {
+    public NoFila getProximo() {
         return proximo;
     }
-    public void setProximo(NoQueue proximo) {
+    public void setProximo(NoFila proximo) {
         this.proximo = proximo;
     }
 
