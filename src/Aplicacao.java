@@ -10,9 +10,10 @@ public class Aplicacao
             if(i%20 == 0)
                 System.out.println();
             b.inserir(i,0);
+            b.exibir();
         }
         System.out.println("\n\n# # # ARVORE B+TREE # # #");
-        b.exibir();
+        //b.exibir();
 
         /*System.out.println("EXCLUIR VALORES:");
         for(int i = 50; i> 0; i--){
@@ -39,11 +40,12 @@ public class Aplicacao
         b.exibir();
 
         /*System.out.println("EXCLUIR VALORES:");
-        for(int i = 50; i> 0; i--){
+        for(int i = 50; i > 0; i--){
             System.out.printf(i+" ");
             if(i%20 == 0)
                 System.out.println();
             b.excluir(i);
+            b.exibir();
         }
         System.out.println("------------------------------");
         b.exibir();*/

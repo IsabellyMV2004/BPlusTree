@@ -709,8 +709,8 @@ public class BPlusTree
 }*/
 
 
-import java.util.LinkedList;
-import java.util.Queue;
+//import java.util.LinkedList;
+//import java.util.Queue;
 
 public class BPlusTree
 {
@@ -860,8 +860,88 @@ public class BPlusTree
             }
         }
     }
+    private void removerPai(No pai, int pos) {
+        // Remove chave e ligação no pai
+        for (int j = pos; j < pai.getTl() - 1; j++) {
+            pai.setvInfo(j, pai.getvInfo(j + 1));
+            pai.setvLig(j + 1, pai.getvLig(j + 2));
+        }
+        pai.setTl(pai.getTl() - 1);
+        pai.setvInfo(pai.getTl(), 0);
+        pai.setvLig(pai.getTl() + 1, null);
+    }
 
-    public void exibir() {
+    private void balancearFilhoInterno(No pai, int pos) {
+        No filho = pai.getvLig(pos);
+        int min = (int) Math.ceil((n - 1) / 2.0);
+        No irmaoE = pos > 0 ? pai.getvLig(pos - 1) : null;
+        No irmaoD = pos < pai.getTl() ? pai.getvLig(pos + 1) : null;
+
+        // Redistribui com irmão esquerdo
+        if (irmaoE != null && irmaoE.getTl() > min) {
+            for (int j = filho.getTl(); j > 0; j--) {
+                filho.setvInfo(j, filho.getvInfo(j - 1));
+                filho.setvLig(j + 1, filho.getvLig(j));
+            }
+            filho.setvInfo(0, pai.getvInfo(pos - 1));
+            filho.setvLig(1, filho.getvLig(0));
+            filho.setvLig(0, irmaoE.getvLig(irmaoE.getTl()));
+            pai.setvInfo(pos - 1, irmaoE.getvInfo(irmaoE.getTl() - 1));
+            irmaoE.setTl(irmaoE.getTl() - 1);
+            filho.setTl(filho.getTl() + 1);
+        }
+
+        // Redistribui com irmão direito
+        else if (irmaoD != null && irmaoD.getTl() > min) {
+            filho.setvInfo(filho.getTl(), pai.getvInfo(pos));
+            filho.setvLig(filho.getTl() + 1, irmaoD.getvLig(0));
+            pai.setvInfo(pos, irmaoD.getvInfo(0));
+            for (int j = 0; j < irmaoD.getTl() - 1; j++) {
+                irmaoD.setvInfo(j, irmaoD.getvInfo(j + 1));
+                irmaoD.setvLig(j, irmaoD.getvLig(j + 1));
+            }
+            irmaoD.setvLig(irmaoD.getTl() - 1, irmaoD.getvLig(irmaoD.getTl()));
+            irmaoD.setTl(irmaoD.getTl() - 1);
+            filho.setTl(filho.getTl() + 1);
+        }
+
+        // Concatena com irmão esquerdo
+        else if (irmaoE != null) {
+            int tlIrmao = irmaoE.getTl();
+            irmaoE.setvInfo(tlIrmao, pai.getvInfo(pos - 1));
+            irmaoE.setTl(tlIrmao + 1);
+            for (int j = 0; j < filho.getTl(); j++) {
+                irmaoE.setvInfo(tlIrmao + 1 + j, filho.getvInfo(j));
+            }
+            for (int j = 0; j <= filho.getTl(); j++) {
+                irmaoE.setvLig(tlIrmao + 1 + j, filho.getvLig(j));
+            }
+            irmaoE.setTl(irmaoE.getTl() + filho.getTl());
+            removerPai(pai, pos - 1);
+        }
+
+        // Concatena com irmão direito
+        else if (irmaoD != null) {
+            filho.setvInfo(filho.getTl(), pai.getvInfo(pos));
+            filho.setTl(filho.getTl() + 1);
+            for (int j = 0; j < irmaoD.getTl(); j++) {
+                filho.setvInfo(filho.getTl() + j, irmaoD.getvInfo(j));
+            }
+            for (int j = 0; j <= irmaoD.getTl(); j++) {
+                filho.setvLig(filho.getTl() + j, irmaoD.getvLig(j));
+            }
+            filho.setTl(filho.getTl() + irmaoD.getTl());
+            removerPai(pai, pos);
+        }
+    }
+
+
+
+    public void excluir(int info) {
+
+    }
+
+    /*public void exibir() {
         int nivelAtual = -1,nivel;
         No atual;
         boolean folha;
@@ -898,6 +978,71 @@ public class BPlusTree
                     }
         }
         System.out.println();
+    }*/
+
+
+    public void exibir() {
+        if (raiz == null) {
+            System.out.println("Árvore vazia.");
+            return;
+        }
+
+        Queue filaNos = new Queue(); // Fila de nós
+        Queue filaNiveis = new Queue(); // Fila de níveis
+
+        filaNos.enqueue(raiz);
+        filaNiveis.enqueue(new No(n, 0, 0)); // usamos o campo vInfo[0] para armazenar o nível
+
+        int nivelAtual = -1;
+
+        while (!filaNos.isEmpty()) {
+            No atual = filaNos.dequeue();
+            int nivel = filaNiveis.dequeue().getvInfo(0);
+
+            if (nivel != nivelAtual) {
+                nivelAtual = nivel;
+                System.out.println();
+                System.out.print("Nível " + nivel + ": ");
+            }
+
+            System.out.print("[");
+            for (int i = 0; i < atual.getTl(); i++) {
+                System.out.print(atual.getvInfo(i));
+                if (i < atual.getTl() - 1) {
+                    System.out.print("|");
+                }
+            }
+            System.out.print("]  ");
+
+            boolean folha = atual.getvLig(0) == null;
+            if (!folha) {
+                for (int i = 0; i <= atual.getTl(); i++) {
+                    if (atual.getvLig(i) != null) {
+                        filaNos.enqueue(atual.getvLig(i));
+                        filaNiveis.enqueue(new No(n, nivel + 1, 0));
+                    }
+                }
+            }
+        }
+
+        System.out.println();
+    }
+
+
+    public No getRaiz() {
+        return raiz;
+    }
+
+    public void setRaiz(No raiz) {
+        this.raiz = raiz;
+    }
+
+    public int getN() {
+        return n;
+    }
+
+    public void setN(int n) {
+        this.n = n;
     }
 }
 
