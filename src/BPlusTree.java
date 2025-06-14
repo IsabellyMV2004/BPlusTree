@@ -935,99 +935,75 @@ public class BPlusTree
         }
     }
 
-
-
     public void excluir(int info) {
 
     }
 
-    /*public void exibir() {
-        int nivelAtual = -1,nivel;
-        No atual;
-        boolean folha;
-        Queue<No> fila = new LinkedList<>();
-        Queue<Integer> niveis = new LinkedList<>();
-        fila.add(raiz);
-        niveis.add(0);
-        while (!fila.isEmpty())
-        {
-            atual = fila.poll();
-            nivel = niveis.poll();
-            if (nivel != nivelAtual)
-            {
-                nivelAtual = nivel;
-                System.out.println();
-                System.out.print("Nível " + nivel + ": ");
-            }
-            folha = (atual.getvLig(0) == null);
-            System.out.print("[");
-
-            for (int i = 0; i < atual.getTl(); i++)
-            {
-                System.out.print(atual.getvInfo(i));
-                if (i < atual.getTl() - 1)
-                    System.out.print("|");
-            }
-            System.out.print("]  ");
-            if (!folha)
-                for (int i = 0; i <= atual.getTl(); i++)
-                    if (atual.getvLig(i) != null)
-                    {
-                        fila.add(atual.getvLig(i));
-                        niveis.add(nivel + 1);
-                    }
-        }
-        System.out.println();
-    }*/
-
-
     public void exibir() {
-        if (raiz == null) {
+        No atual;
+        Queue filaNos = new Queue();
+        Queue filaNiveis = new Queue();
+        int nivelAtual = -1, nivel;
+
+        if (raiz == null)
             System.out.println("Árvore vazia.");
-            return;
-        }
-
-        Queue filaNos = new Queue(); // Fila de nós
-        Queue filaNiveis = new Queue(); // Fila de níveis
-
-        filaNos.enqueue(raiz);
-        filaNiveis.enqueue(new No(n, 0, 0)); // usamos o campo vInfo[0] para armazenar o nível
-
-        int nivelAtual = -1;
-
-        while (!filaNos.isEmpty()) {
-            No atual = filaNos.dequeue();
-            int nivel = filaNiveis.dequeue().getvInfo(0);
-
-            if (nivel != nivelAtual) {
-                nivelAtual = nivel;
-                System.out.println();
-                System.out.print("Nível " + nivel + ": ");
-            }
-
-            System.out.print("[");
-            for (int i = 0; i < atual.getTl(); i++) {
-                System.out.print(atual.getvInfo(i));
-                if (i < atual.getTl() - 1) {
-                    System.out.print("|");
+        else
+        {
+            filaNos.enqueue(raiz);
+            filaNiveis.enqueue(new No(n, 0, 0));
+            while (!filaNos.isEmpty())
+            {
+                atual = filaNos.dequeue();
+                nivel = filaNiveis.dequeue().getvInfo(0);
+                if (nivel != nivelAtual)
+                {
+                    nivelAtual = nivel;
+                    System.out.println();
+                    System.out.print("Nível " + nivel + ": ");
                 }
-            }
-            System.out.print("]  ");
-
-            boolean folha = atual.getvLig(0) == null;
-            if (!folha) {
-                for (int i = 0; i <= atual.getTl(); i++) {
-                    if (atual.getvLig(i) != null) {
-                        filaNos.enqueue(atual.getvLig(i));
-                        filaNiveis.enqueue(new No(n, nivel + 1, 0));
-                    }
+                System.out.print("[");
+                for (int i = 0; i < atual.getTl(); i++)
+                {
+                    System.out.print(atual.getvInfo(i));
+                    if (i < atual.getTl() - 1)
+                        System.out.print("|");
                 }
+                System.out.print("]  ");
+                if (atual.getvLig(0) != null)
+                    for (int i = 0; i <= atual.getTl(); i++)
+                        if (atual.getvLig(i) != null)
+                        {
+                            filaNos.enqueue(atual.getvLig(i));
+                            filaNiveis.enqueue(new No(n, nivel + 1, 0));
+                        }
             }
+            System.out.println();
         }
+    }
 
+    public void in_ordem()
+    {
+        in_ordem(raiz);
         System.out.println();
     }
 
+    private void in_ordem(No raiz) {
+        if (raiz != null)
+        {
+            if (raiz.getvLig(0) == null)
+                for (int i = 0; i < raiz.getTl(); i++)
+                    System.out.print(raiz.getvInfo(i) + " ");
+            else
+            {
+                for (int i = 0; i < raiz.getTl(); i++)
+                {
+                    in_ordem(raiz.getvLig(i));
+                    System.out.print(raiz.getvInfo(i) + " ");
+                }
+                in_ordem(raiz.getvLig(raiz.getTl()));
+            }
+        }
+    }
 
     public No getRaiz() {
         return raiz;

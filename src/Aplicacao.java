@@ -10,10 +10,12 @@ public class Aplicacao
             if(i%20 == 0)
                 System.out.println();
             b.inserir(i,0);
-            b.exibir();
+            //b.exibir();
         }
-        System.out.println("\n\n# # # ARVORE B+TREE # # #");
-        //b.exibir();
+        System.out.printf("\n\n# # # ARVORE B+TREE # # #");
+        b.exibir();
+        System.out.println("\n\n# # # # IN-ORDEM DA ARVORE TREE # # #");
+        b.in_ordem();
 
         /*System.out.println("EXCLUIR VALORES:");
         for(int i = 50; i> 0; i--){
@@ -23,7 +25,7 @@ public class Aplicacao
             b.excluir(i);
         }
         System.out.println("------------------------------");
-        b.exibir();*/
+        b.exibir();
 
 
         System.out.println("\n\n\n-------------------------------------------------------------------------------\n");
