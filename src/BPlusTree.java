@@ -9,7 +9,7 @@ public class BPlusTree
         this.n = n;
     }
 
-    private No navegarAteFolha(int info)
+   public No navegarAteFolha(int info)
     {
         No no = raiz;
         int pos;
@@ -21,7 +21,24 @@ public class BPlusTree
         return no;
     }
 
-    private No localizarPai(No folha, int info)
+    private No localizarNo(int info)
+    {
+        No no = raiz;
+        while (no != null)
+        {
+            int pos = no.procurarPosicao(info);
+            if (no.getvLig(0)==null)
+            {
+                if (pos < no.getTl() && no.getvInfo(pos) == info)
+                    return no;
+                return null;
+            }
+            no = no.getvLig(pos);
+        }
+        return null;
+    }
+
+    public No localizarPai(No folha, int info)
     {
         if(folha==null)
             return null;
@@ -149,8 +166,209 @@ public class BPlusTree
         }
     }
 
-    public void excluir(int info) {
+    public void excluir(int info){
+        excluir(raiz,null,info,0);
+    }
 
+    public void excluir(No no, No pai, int info, int posArq) {
+        int pos,chave;
+        No filho, folha;
+        if (no != null)
+        {
+            pos = no.procurarPosicao(info);
+            if (no.getvLig(0) != null)
+            {
+                filho = no.getvLig(pos);
+                excluir(filho, no, info, posArq);
+                if (filho.getTl() < (int) Math.ceil(n / 2.0) - 1)
+                    tratarUnderflow(no, info, pos);
+                if (pos > 0 && pos <= no.getTl() && no.getvInfo(pos - 1) == info)
+                {
+                    folha = navegarAteFolha(info);
+                    if (folha.getTl() > 0) {
+                        no.setvInfo(pos - 1, folha.getvInfo(0));
+                        no.setvPos(pos - 1, folha.getvPos(0));
+                    }
+                }
+            }
+            else
+            {
+                if (pos < no.getTl() && no.getvInfo(pos) == info)
+                {
+                    chave = no.getvInfo(pos);
+                    no.remanejarExclusao(pos);
+                    no.setTl(no.getTl() - 1);
+                    if (no == raiz && no.getTl() == 0)
+                        raiz = null;
+                    else
+                        if (pos == 0 && no.getTl() > 0 && pai != null)
+                            atualizarChavesPai(pai, no.getvInfo(0), chave);
+                }
+            }
+        }
+    }
+
+    private void atualizarChavesPai(No no, int novaChave, int chaveAntiga)
+    {
+        boolean flag = false;
+        if (no != null)
+        {
+            for (int i = 0; i < no.getTl() && !flag; i++)
+                if (no.getvInfo(i) == chaveAntiga) {
+                    no.setvInfo(i, novaChave);
+                    flag = true;
+                }
+            for (int i = 0; i <= no.getTl(); i++)
+                if (no.getvLig(i) != null)
+                    atualizarChavesPai(no.getvLig(i), novaChave, chaveAntiga);
+        }
+    }
+
+    private void tratarUnderflow(No no, int info, int ordem) {
+        No pai, irmaoEsquerdo, irmaoDireito;
+        boolean flag;
+        int indexNo = -1, chavePai;
+        if (no.getTl() < ordem / 2)
+        {
+            pai = localizarPai(no, info);
+            flag = true;
+            if (pai == null)
+            {
+                if (no.getTl() == 0 && no.getvLig(0) != null)
+                    raiz = no.getvLig(0);
+                flag = false;
+            }
+            if (flag)
+            {
+                flag = false;
+                for (int i = 0; i <= pai.getTl() && !flag; i++)
+                    if (pai.getvLig(i) == no)
+                    {
+                        indexNo = i;
+                        flag = true;
+                    }
+                if (flag)
+                {
+                    flag= false;
+                    if (indexNo > 0 && !flag)
+                    {
+                        irmaoEsquerdo = pai.getvLig(indexNo - 1);
+                        if (irmaoEsquerdo.getTl() > ordem / 2)
+                        {
+                            redistribuirEsquerda(irmaoEsquerdo, no, pai, indexNo - 1);
+                            flag = true;
+                        }
+                    }
+                    if (indexNo < pai.getTl() && !flag)
+                    {
+                        irmaoDireito = pai.getvLig(indexNo + 1);
+                        if (irmaoDireito.getTl() > ordem / 2)
+                        {
+                            redistribuirDireita(no, irmaoDireito, pai, indexNo);
+                            flag = true;
+                        }
+                    }
+                    if (!flag)
+                    {
+                        if (indexNo > 0)
+                        {
+                            irmaoEsquerdo = pai.getvLig(indexNo - 1);
+                            mergeEsquerda(irmaoEsquerdo, no, pai, indexNo - 1);
+                        }
+                        else
+                        {
+                            irmaoDireito = pai.getvLig(indexNo + 1);
+                            mergeDireita(no, irmaoDireito, pai, indexNo);
+                        }
+                        if (pai.getTl() < (ordem - 1) / 2)
+                        {
+                            if(pai.getTl() > 0)
+                                chavePai = pai.getvInfo(0);
+                            else
+                                chavePai = info;
+                            tratarUnderflow(pai, chavePai, ordem);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void redistribuirEsquerda(No irmaoEsq, No no, No pai, int posPai)
+    {
+        no.remanejar(0);
+        no.setvInfo(0, pai.getvInfo(posPai));
+        no.setvPos(0, pai.getvPos(posPai));
+        no.setTl(no.getTl() + 1);
+        pai.setvInfo(posPai, irmaoEsq.getvInfo(irmaoEsq.getTl() - 1));
+        pai.setvPos(posPai, irmaoEsq.getvPos(irmaoEsq.getTl() - 1));
+        if (irmaoEsq.getvLig(0) != null)
+        {
+            no.setvLig(0, irmaoEsq.getvLig(irmaoEsq.getTl()));
+            irmaoEsq.setvLig(irmaoEsq.getTl(), null);
+        }
+        irmaoEsq.setTl(irmaoEsq.getTl() - 1);
+    }
+
+    private void redistribuirDireita(No no, No irmaoDir, No pai, int posPai)
+    {
+        no.setvInfo(no.getTl(), pai.getvInfo(posPai));
+        no.setvPos(no.getTl(), pai.getvPos(posPai));
+        no.setTl(no.getTl() + 1);
+        pai.setvInfo(posPai, irmaoDir.getvInfo(0));
+        pai.setvPos(posPai, irmaoDir.getvPos(0));
+        if (irmaoDir.getvLig(0) != null)
+        {
+            no.setvLig(no.getTl(), irmaoDir.getvLig(0));
+            irmaoDir.remanejarExclusao(0);
+        }
+        else
+            irmaoDir.remanejarExclusao(0);
+        irmaoDir.setTl(irmaoDir.getTl() - 1);
+    }
+
+    private void mergeEsquerda(No irmaoEsq, No no, No pai, int posPai)
+    {
+        irmaoEsq.setvInfo(irmaoEsq.getTl(), pai.getvInfo(posPai));
+        irmaoEsq.setvPos(irmaoEsq.getTl(), pai.getvPos(posPai));
+        irmaoEsq.setTl(irmaoEsq.getTl() + 1);
+        for (int i = 0; i < no.getTl(); i++)
+        {
+            irmaoEsq.setvInfo(irmaoEsq.getTl(), no.getvInfo(i));
+            irmaoEsq.setvPos(irmaoEsq.getTl(), no.getvPos(i));
+            irmaoEsq.setTl(irmaoEsq.getTl() + 1);
+        }
+        if (no.getvLig(0) != null)
+            for (int i = 0; i <= no.getTl(); i++)
+                irmaoEsq.setvLig(irmaoEsq.getTl(), no.getvLig(i));
+
+        pai.remanejarExclusao(posPai);
+        pai.setTl(pai.getTl() - 1);
+        pai.setvLig(posPai + 1, irmaoEsq);
+
+        if (pai == raiz && pai.getTl() == 0)
+            raiz = irmaoEsq;
+    }
+
+    private void mergeDireita(No no, No irmaoDir, No pai, int posPai)
+    {
+        no.setvInfo(no.getTl(), pai.getvInfo(posPai));
+        no.setvPos(no.getTl(), pai.getvPos(posPai));
+        no.setTl(no.getTl() + 1);
+        for (int i = 0; i < irmaoDir.getTl(); i++)
+        {
+            no.setvInfo(no.getTl(), irmaoDir.getvInfo(i));
+            no.setvPos(no.getTl(), irmaoDir.getvPos(i));
+            no.setTl(no.getTl() + 1);
+        }
+        if (irmaoDir.getvLig(0) != null)
+            for (int i = 0; i <= irmaoDir.getTl(); i++)
+                no.setvLig(no.getTl(), irmaoDir.getvLig(i));
+        pai.remanejarExclusao(posPai);
+        pai.setTl(pai.getTl() - 1);
+        pai.setvLig(posPai + 1, no);
+        if (pai == raiz && pai.getTl() == 0)
+            raiz = no;
     }
 
     public void exibir() {
@@ -201,7 +419,7 @@ public class BPlusTree
         System.out.println();
     }
 
-    private void in_ordem(No raiz) {
+    public void in_ordem(No raiz) {
         if (raiz != null)
         {
             if (raiz.getvLig(0) == null)
