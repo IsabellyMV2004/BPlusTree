@@ -1,6 +1,6 @@
 public class No
 {
-    private int n; //ordem da B Tree
+    private int n;
     private int vInfo[];
     private int vPos[];
     private No vLig[];
@@ -8,9 +8,9 @@ public class No
 
     public No(int m) {
         n = m;
-        vInfo = new int[m+1];
-        vPos = new int[m+1];
-        vLig = new No[m+2];
+        vInfo = new int[n+1];
+        vPos = new int[n+1];
+        vLig = new No[n+2];
         tl = 0;
     }
 
