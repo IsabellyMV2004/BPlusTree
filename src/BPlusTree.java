@@ -159,7 +159,7 @@ public class BPlusTree
                 filho = no.getvLig(pos);
                 excluir(filho, no, info, posArq);
                 if (filho.getTl() < (int) Math.ceil(n / 2.0) - 1)
-                    tratarUnderflow(no, info, pos);
+                    underflow(no, info, pos);
                 if (pos > 0 && pos <= no.getTl() && no.getvInfo(pos - 1) == info)
                 {
                     folha = navegarAteFolha(info);
@@ -187,26 +187,26 @@ public class BPlusTree
         }
     }
 
-    public void atualizarChavesPai(No no, int novaChave, int chaveAntiga)
+    public void atualizarChavesPai(No no, int chaveNova, int chaveVelha)
     {
         boolean flag = false;
         if (no != null)
         {
             for (int i = 0; i < no.getTl() && !flag; i++)
-                if (no.getvInfo(i) == chaveAntiga)
+                if (no.getvInfo(i) == chaveVelha)
                 {
-                    no.setvInfo(i, novaChave);
+                    no.setvInfo(i, chaveNova);
                     flag = true;
                 }
             for (int i = 0; i <= no.getTl(); i++)
                 if (no.getvLig(i) != null)
-                    atualizarChavesPai(no.getvLig(i), novaChave, chaveAntiga);
+                    atualizarChavesPai(no.getvLig(i), chaveNova, chaveVelha);
         }
     }
 
-    public void tratarUnderflow(No no, int info, int ordem)
+    public void underflow(No no, int info, int ordem)
     {
-        No pai, irmaoEsquerdo, irmaoDireito;
+        No pai, irmaoEsq, irmaoDir;
         boolean flag;
         int pos = -1, chavePai;
         if (no.getTl() < ordem / 2)
@@ -233,19 +233,19 @@ public class BPlusTree
                     flag= false;
                     if (pos > 0 && !flag)
                     {
-                        irmaoEsquerdo = pai.getvLig(pos - 1);
-                        if (irmaoEsquerdo.getTl() > ordem / 2)
+                        irmaoEsq = pai.getvLig(pos - 1);
+                        if (irmaoEsq.getTl() > ordem / 2)
                         {
-                            redistribuirEsquerda(irmaoEsquerdo, no, pai, pos - 1);
+                            redistribuirEsquerda(irmaoEsq, no, pai, pos - 1);
                             flag = true;
                         }
                     }
                     if (pos < pai.getTl() && !flag)
                     {
-                        irmaoDireito = pai.getvLig(pos + 1);
-                        if (irmaoDireito.getTl() > ordem / 2)
+                        irmaoDir = pai.getvLig(pos + 1);
+                        if (irmaoDir.getTl() > ordem / 2)
                         {
-                            redistribuirDireita(no, irmaoDireito, pai, pos);
+                            redistribuirDireita(no, irmaoDir, pai, pos);
                             flag = true;
                         }
                     }
@@ -253,13 +253,13 @@ public class BPlusTree
                     {
                         if (pos > 0)
                         {
-                            irmaoEsquerdo = pai.getvLig(pos - 1);
-                            mergeEsquerda(irmaoEsquerdo, no, pai, pos - 1);
+                            irmaoEsq = pai.getvLig(pos - 1);
+                            mergeEsquerda(irmaoEsq, no, pai, pos - 1);
                         }
                         else
                         {
-                            irmaoDireito = pai.getvLig(pos + 1);
-                            mergeDireita(no, irmaoDireito, pai, pos);
+                            irmaoDir = pai.getvLig(pos + 1);
+                            mergeDireita(no, irmaoDir, pai, pos);
                         }
                         if (pai.getTl() < (ordem - 1) / 2)
                         {
@@ -267,7 +267,7 @@ public class BPlusTree
                                 chavePai = pai.getvInfo(0);
                             else
                                 chavePai = info;
-                            tratarUnderflow(pai, chavePai, ordem);
+                            underflow(pai, chavePai, ordem);
                         }
                     }
                 }
