@@ -227,7 +227,7 @@ public class BPlusTree
     private void tratarUnderflow(No no, int info, int ordem) {
         No pai, irmaoEsquerdo, irmaoDireito;
         boolean flag;
-        int indexNo = -1, chavePai;
+        int pos = -1, chavePai;
         if (no.getTl() < ordem / 2)
         {
             pai = localizarPai(no, info);
@@ -244,41 +244,41 @@ public class BPlusTree
                 for (int i = 0; i <= pai.getTl() && !flag; i++)
                     if (pai.getvLig(i) == no)
                     {
-                        indexNo = i;
+                        pos = i;
                         flag = true;
                     }
                 if (flag)
                 {
                     flag= false;
-                    if (indexNo > 0 && !flag)
+                    if (pos > 0 && !flag)
                     {
-                        irmaoEsquerdo = pai.getvLig(indexNo - 1);
+                        irmaoEsquerdo = pai.getvLig(pos - 1);
                         if (irmaoEsquerdo.getTl() > ordem / 2)
                         {
-                            redistribuirEsquerda(irmaoEsquerdo, no, pai, indexNo - 1);
+                            redistribuirEsquerda(irmaoEsquerdo, no, pai, pos - 1);
                             flag = true;
                         }
                     }
-                    if (indexNo < pai.getTl() && !flag)
+                    if (pos < pai.getTl() && !flag)
                     {
-                        irmaoDireito = pai.getvLig(indexNo + 1);
+                        irmaoDireito = pai.getvLig(pos + 1);
                         if (irmaoDireito.getTl() > ordem / 2)
                         {
-                            redistribuirDireita(no, irmaoDireito, pai, indexNo);
+                            redistribuirDireita(no, irmaoDireito, pai, pos);
                             flag = true;
                         }
                     }
                     if (!flag)
                     {
-                        if (indexNo > 0)
+                        if (pos > 0)
                         {
-                            irmaoEsquerdo = pai.getvLig(indexNo - 1);
-                            mergeEsquerda(irmaoEsquerdo, no, pai, indexNo - 1);
+                            irmaoEsquerdo = pai.getvLig(pos - 1);
+                            mergeEsquerda(irmaoEsquerdo, no, pai, pos - 1);
                         }
                         else
                         {
-                            irmaoDireito = pai.getvLig(indexNo + 1);
-                            mergeDireita(no, irmaoDireito, pai, indexNo);
+                            irmaoDireito = pai.getvLig(pos + 1);
+                            mergeDireita(no, irmaoDireito, pai, pos);
                         }
                         if (pai.getTl() < (ordem - 1) / 2)
                         {
@@ -341,11 +341,9 @@ public class BPlusTree
         if (no.getvLig(0) != null)
             for (int i = 0; i <= no.getTl(); i++)
                 irmaoEsq.setvLig(irmaoEsq.getTl(), no.getvLig(i));
-
         pai.remanejarExclusao(posPai);
         pai.setTl(pai.getTl() - 1);
         pai.setvLig(posPai + 1, irmaoEsq);
-
         if (pai == raiz && pai.getTl() == 0)
             raiz = irmaoEsq;
     }
@@ -378,7 +376,7 @@ public class BPlusTree
         int nivelAtual = -1, nivel;
 
         if (raiz == null)
-            System.out.println("Árvore vazia.");
+            System.out.println("Arvore vazia");
         else
         {
             filaNos.enqueue(raiz);
